@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wordle-like Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+        }
+
+        #game-board {
+            display: grid;
+            grid-template-columns: repeat(5, 40px);
+            grid-gap: 5px;
+            margin-bottom: 20px;
+        }
+
+        .tile {
+            width: 40px;
+            height: 40px;
+            border: 2px solid #ccc;
+            text-align: center;
+            font-size: 24px;
+            line-height: 40px;
+            background-color: white;
+        }
+
+        .correct {
+            background-color: green;
+            color: white;
+        }
+
+        .present {
+            background-color: yellow;
+            color: white;
+        }
+
+        .absent {
+            background-color: grey;
+            color: white;
+        }
+
+        #keyboard {
+            display: flex;
+            flex-wrap: wrap;
+            width: 210px;
+        }
+
+        .key {
+            width: 30px;
+            height: 40px;
+            margin: 2px;
+            text-align: center;
+            line-height: 40px;
+            background-color: #ddd;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="game-board"></div>
+    <div id="keyboard"></div>
+
+    <script>
+        const localWords = ["LEMON", "RIVER", "GREEN"]; // Local words list
+        let currentWord = localWords[Math.floor(Math.random() * localWords.length)];
+        let attempts = 6;
+        let guessedWords = [];
+
+        function createBoard() {
+            const board = document.getElementById('game-board');
+            for (let i = 0; i < attempts * 5; i++) {
+                const tile = document.createElement('div');
+                tile.className = 'tile';
+                board.appendChild(tile);
+            }
+        }
+
+        function createKeyboard() {
+            const keyboard = document.getElementById('keyboard');
+            const keys = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+            keys.forEach(key => {
+                const keyDiv = document.createElement('div');
+                keyDiv.className = 'key';
+                keyDiv.innerText = key;
+                keyDiv.addEventListener('click', () => handleKeyPress(key));
+                keyboard.appendChild(keyDiv);
+            });
+        }
+
+        function handleKeyPress(key) {
+            if (guessedWords.length >= attempts) return;
+
+            const activeTiles = Array.from(document.querySelectorAll('.tile')).slice(guessedWords.length * 5, guessedWords.length * 5 + 5);
+            if (activeTiles.filter(tile => tile.innerText).length < 5) {
+                activeTiles[activeTiles.filter(tile => tile.innerText).length].innerText = key;
+            } else {
+                const guessedWord = activeTiles.map(tile => tile.innerText).join('');
+                if (guessedWord.length === 5) {
+                    guessedWords.push(guessedWord);
+                    checkWord(guessedWord, activeTiles);
+                    if (guessedWord === currentWord) {
+                        alert('You guessed the word!');
+                    } else if (guessedWords.length === attempts) {
+                        alert('Game over! The word was ' + currentWord);
+                    }
+                }
+            }
+        }
+
+        function checkWord(guessedWord, tiles) {
+            const result = [];
+            for (let i = 0; i < guessedWord.length; i++) {
+                if (guessedWord[i] === currentWord[i]) {
+                    result.push('correct');
+                } else if (currentWord.includes(guessedWord[i])) {
+                    result.push('present');
+                } else {
+                    result.push('absent');
+                }
+            }
+            tiles.forEach((tile, index) => {
+                tile.classList.add(result[index]);
+            });
+        }
+
+        createBoard();
+        createKeyboard();
+    </script>
+</body>
+
+</html>
